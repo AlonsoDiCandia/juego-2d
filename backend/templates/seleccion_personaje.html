@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Selección de personajes{% endblock %}
+
+{% block content %}
+<div class="column">
+    <h1>Selección de personajes</h1>
+
+    <div class="row">
+        {% for personaje in personajes %}
+            <div class="personaje">
+                <h2>{{ personaje.nombre }}</h2>
+                <img src="{{ personaje.imagen.url }}" alt="{{ personaje.nombre }}">
+                <button onclick="personajeSeleccionado('{{ personaje.nombre }}')">Seleccionar</button>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function personajeSeleccionado(nombre) {
+    console.log(nombre);
+    window.location.href = 'http://localhost:8000/api/personaje-seleccionado/' + nombre + '/';
+}
+</script>
+{% endblock %}

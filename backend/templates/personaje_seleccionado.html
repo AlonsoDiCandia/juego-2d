@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Selección de personajes{% endblock %}
+
+{% block content %}
+<div class="column">
+    <h1>Para comenzar el juego click en Jugar!</h1>
+
+    <button onclick="iniciarJuego('{{ personaje.nombre }}')">Jugar!</button>            
+
+    <img class="juego" id="imagen-generada" style="display: none;">
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let jugando = false;
+let URL_PERSONAJE = "";
+
+async function iniciarJuego(personaje) {
+  jugando = true;
+  PERSONAJE = personaje;
+  console.log("Juego iniciado — escuchando teclas...");
+  const img = document.getElementById("imagen-generada");
+  img.style.display = "block";
+  await actualizarMovimiento('start')
+}
+
+document.addEventListener("keydown", async (event) => {
+  if (!jugando) return;
+
+  switch (event.key) {
+    case "ArrowUp":
+      console.log("↑ Arriba");
+      await actualizarMovimiento("w")
+      break;
+    case "ArrowDown":
+      console.log("↓ Abajo");
+      await actualizarMovimiento("s")
+      break;
+    case "ArrowLeft":
+      console.log("← Izquierda");
+      await actualizarMovimiento("a")
+      break;
+    case "ArrowRight":
+      console.log("→ Derecha");
+      await actualizarMovimiento("d")
+      break;
+    case " ":
+      console.log("Espacio ");
+      await actualizarMovimiento("space", true)
+      break;
+    default:
+      console.log("Tecla presionada:", event.key);
+  }
+});
+
+async function actualizarMovimiento(movimiento, bala = false) {
+        try {
+    // Llamamos al endpoint de la imagen
+    const response = await fetch("/api/generar—movimiento/", {      
+        method: "POST",   
+        headers: {
+        "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ 
+            personaje: PERSONAJE,
+            movimiento: movimiento,
+            bala: bala
+        })
+    });
+    if (!response.ok) throw new Error("Error al obtener la imagen");
+
+    // Convertimos la respuesta binaria en una URL utilizable por el navegador
+    const blob = await response.blob();
+    const imgURL = URL.createObjectURL(blob);
+
+    // Si ya hay una imagen mostrada, la reemplazamos
+    let img = document.getElementById("imagen-generada");
+    if (!img) {
+        img = document.createElement("img");
+        img.id = "imagen-generada";
+        img.style.maxWidth = "300px";
+        document.body.appendChild(img);
+    }
+    img.src = imgURL;
+
+    } catch (err) {
+    console.error("Error:", err);
+    }
+}
+</script>
+{% endblock %}
